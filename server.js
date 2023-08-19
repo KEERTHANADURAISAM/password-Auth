@@ -71,4 +71,19 @@ app.get("/users", async (req, res) => {
   }
 });
 
+app.delete("/register/:id", async (req, res) => {
+  try {
+    const connection = await mongoClient.connect(URL);
+    const db = connection.db(DB);
+    const user = await db
+      .collection("userRegister")
+      .findOneAndDelete({ _id: new mongodb.ObjectId(req.params.id) });
+    await connection.close();
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "can't connect database" });
+  }
+});
+
 app.listen(process.env.PORT || 3002);
