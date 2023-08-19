@@ -1,1 +1,7 @@
 connection. close()=>await kudukalana connection close ahama port already in use nu error varum
+
+
+  .collection("userRegister")
+      .findOneAndUpdate(
+        { _id: new mongodb.ObjectId(req.params.id) },
+        { $set: req.body })//put method
