@@ -7,8 +7,12 @@ const mongodb = require("mongodb");
 const mongoClient = mongodb.MongoClient;
 const URL = process.env.DB;
 const DB = "MERNAPPCRUD";
+const cors = require("cors");
 
 app.use(express.json());
+app.use(cors({
+  origin: "*"
+}))
 
 app.get("/home", (req, res) => {
   res.json({ message: "welcome" });
