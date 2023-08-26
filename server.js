@@ -19,11 +19,12 @@ app.post("/register", async function (req, res) {
     const connection = await mongoClient.connect(URL);
     const db = connection.db(DB);
     const salt = await bcrypt.genSalt(10);
-    console.log(salt);
+    console.log(salt); //$2a$10$j06pPIoiAuae66tENIJjiu
     let hash = await bcrypt.hash(req.body.password, salt);
-    console.log(hash);
+    console.log(hash); // random salt + password=$2a$10$j06pPIoiAuae66tENIJjiuov423TknXYlxsazm0VaMqaIOdCUza82
+    req.body.password = hash;
     await db.collection("userRegister").insertOne(req.body);
-    connection.close();
+    await connection.close();
     res.json({ message: "register successfully" });
   } catch (error) {
     console.log(error);
@@ -41,6 +42,32 @@ app.get("/users", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "can't connect database" });
+  }
+});
+
+// login
+app.post("/login", async (req, res) => {
+  try {
+    const connection = await mongoClient.connect(URL);
+    const db = connection.db(DB);
+    const user = await db
+      .collection("userRegister")
+      .findOne({ email: req.body.email });
+    await connection.close();
+    if (user) {
+      console.log(req.body.password);
+      let compare = await bcrypt.compare(req.body.password, user.password);
+      if (compare) {
+        res.status(200).json({ message: "login successfully" });
+      } else {
+        res.status(401).json({ message: "email/username not found" });
+      }
+    } else {
+      res.status(401).json({ message: "email/username not found" });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json("something went wrong");
   }
 });
 
