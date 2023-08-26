@@ -1,7 +1,102 @@
 connection. close()=>await kudukalana connection close ahama port already in use nu error varum
-
+install packages bcryptjs,
+const bcrypt = require("bcryptjs");
+const jwt = require("jwt");
 
   .collection("userRegister")
       .findOneAndUpdate(
         { _id: new mongodb.ObjectId(req.params.id) },
         { $set: req.body })//put method
+
+pwd encrpt pana # algoritham (sha256-algoritham)   
+
+hello(pwd) kudutha athu oru hash kudukum h-a,e-r,l-p,l-p,o-q arppq encrypt code 
+
+hello -one random key(2abb) ovuru application laium random key change ahum
+
+
+pwd dycrpt pana encrypt pana mudiyathu 
+
+every hash have specific salt
+ const salt = await bcrypt.genSalt(10);
+    console.log(salt); //secrect key
+    let hash = await bcrypt.hash(req.body.pwd, salt);
+    console.log(hash); //randomsalt + password=hash
+
+
+
+salt:secert key 
+
+app.post("/register", async (req, res) => {
+  try {
+    const connection = await mongoClient.connect(URL);
+    const db = connection.db(DB);
+    const salt = await bcrypt.genSalt(10);//gensalt(100) kudutha salt craete aha rmba late ahum salt one methamatical calculation
+    console.log(salt); //secrect key
+    let hash = await bcrypt.hash(req.body.password, salt);
+    console.log(hash); //randomsalt + password=hash($2a$10$Xl3fAmLFzdUr7V3r8yIS1usB/AARbXIy68a4Zcb58vMmbHRw1IW8e)
+    req.body.password = hash;///only give the password
+    const user = await db.collection("userRegister").insertOne(req.body);
+    await connection.close();
+
+    res.status(200).json({ message: "register successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "can't connect database" });
+  }
+});
+
+post panum pothu only give email-password another word does not take and create salt and hash and wrong ah name la login panalum login ahum
+
+app.post("/login", async (req, res) => {
+  try {
+    const connection = await mongoClient.connect(URL);
+    const db = connection.db(DB);
+    const user = await db
+      .collection("userRegister")
+      .findOne({ email: req.body.email });
+    if (user) {
+      console.log(user);
+      let compare = await bcrypt.compare(req.body.password, user.password);
+      if (compare) {
+        res.json({ message: "logged in successfully" });
+      } else {
+        res.json({ message: "email/password mismatch" });
+      }
+    } else {
+      res.status(401).json({ message: "User email not found" });
+    }
+     await connection.close();
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "something went wrong" });
+  }
+});
+
+
+$2a$10$izcTWbkrfa6uUjY2I4rRB.atqnyxYK3erey94vfjttJRzz84P9HDS actual encrypt password
+
+
+compare method
+let compare = await bcrypt.compare(req.body.password, user.password);
+
+ compare method pwd + salt ah hash pani o/p=B.atqnyxYK3erey94vfjttJRzz84P9HDS ithuva iruntha login successfully
+keerthana123 //pwd
+$2a$10$izcTWbkrfa6uUjY2I4rR//salt
+B.atqnyxYK3erey94vfjttJRzz84P9HDS//hash
+
+
+
+
+build usage
+
+100 function one package la na use pana 5 function mattum 1 file la varum
+unwanted space avoid 
+
+
+
+
+jwt-have 3 parts 
+1.header - username password - one hash
+2.payload data - user details  - one hash
+3.verify signature - header + payload Data mix pani salt add pani new hash
