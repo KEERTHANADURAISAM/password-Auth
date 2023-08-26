@@ -16,7 +16,7 @@ app.get("/home", (req, res) => {
 
 app.post("/register", async function (req, res) {
   try {
-    const connection = await mongodb.connect(URL);
+    const connection = await mongoClient.connect(URL);
     const db = connection.db(DB);
     const salt = await bcrypt.genSalt(10);
     console.log(salt);
