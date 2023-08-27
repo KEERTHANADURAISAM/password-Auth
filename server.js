@@ -70,7 +70,7 @@ app.post("/login", async (req, res) => {
     const user = await db
       .collection("userRegister")
       .findOne({ email: req.body.email });
-    await connection.close();
+   
     if (user) {
       let compare = await bcrypt.compare(req.body.password, user.password);
 
@@ -85,6 +85,7 @@ app.post("/login", async (req, res) => {
     } else {
       res.status(401).json({ message: "email/username not found" });
     }
+    await connection.close();
   } catch (error) {
     console.log(error);
     res.status(500).json("something went wrong");
