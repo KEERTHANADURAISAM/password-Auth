@@ -16,7 +16,7 @@ app.use(
   })
 );
 
-let authendicate = (req,res,next) => {
+let authendicate = (req, res, next) => {
   if (req.headers.authorization) {
     try {
       let decode = jwt.verify(req.headers.authorization, process.env.SECRET);
@@ -70,7 +70,7 @@ app.post("/login", async (req, res) => {
     const user = await db
       .collection("userRegister")
       .findOne({ email: req.body.email });
-   
+
     if (user) {
       let compare = await bcrypt.compare(req.body.password, user.password);
 
