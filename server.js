@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const dotenv = require("dotenv").config();
 const bcrypt = require("bcryptjs");
-// const jwt = require("jwt");
+const jwt = require("jsonwebtoken");
 const mongodb = require("mongodb");
 const mongoClient = mongodb.MongoClient;
 const URL = process.env.DB;
@@ -10,22 +10,35 @@ const DB = "MERNAPPCRUD";
 const cors = require("cors");
 
 app.use(express.json());
-app.use(cors({
-  origin: "*"
-}))
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
-app.get("/home", (req, res) => {
-  res.json({ message: "welcome" });
-});
+let authendicate = (req, res, next) => {
+  if (req.headers.authorization) {
+    try {
+      let decode = jwt.verify(req.headers.authorization, process.env.SECRET);
+      if (decode) {
+        next();
+      }
+    } catch {
+      res.status(401).json({ message: "UNATHORIZED" });
+    }
+  } else {
+    res.status(401).json({ message: "UNATHORIZED" });
+  }
+};
 
 app.post("/register", async function (req, res) {
   try {
     const connection = await mongoClient.connect(URL);
     const db = connection.db(DB);
     const salt = await bcrypt.genSalt(10);
-    console.log(salt); //$2a$10$j06pPIoiAuae66tENIJjiu
+    // console.log(salt); //$2a$10$j06pPIoiAuae66tENIJjiu
     let hash = await bcrypt.hash(req.body.password, salt);
-    console.log(hash); // random salt + password=$2a$10$j06pPIoiAuae66tENIJjiuov423TknXYlxsazm0VaMqaIOdCUza82
+    // console.log(hash); // random salt + password=$2a$10$j06pPIoiAuae66tENIJjiuov423TknXYlxsazm0VaMqaIOdCUza82
     req.body.password = hash;
     await db.collection("userRegister").insertOne(req.body);
     await connection.close();
@@ -36,7 +49,7 @@ app.post("/register", async function (req, res) {
   }
 });
 
-app.get("/users", async (req, res) => {
+app.get("/users", authendicate, async (req, res) => {
   try {
     const connection = await mongoClient.connect(URL);
     const db = connection.db(DB);
@@ -59,10 +72,13 @@ app.post("/login", async (req, res) => {
       .findOne({ email: req.body.email });
     await connection.close();
     if (user) {
-      console.log(req.body.password);
       let compare = await bcrypt.compare(req.body.password, user.password);
+
       if (compare) {
-        res.status(200).json({ message: "login successfully" });
+        let token = jwt.sign({ _id: user._id }, process.env.SECRET, {
+          expiresIn: "2m",
+        });
+        res.json(token);
       } else {
         res.status(401).json({ message: "email/username not found" });
       }
@@ -72,6 +88,32 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json("something went wrong");
+  }
+});
+
+app.post("/products", async (req, res) => {
+  try {
+    const connection = await mongoClient.connect(URL);
+    const db = connection.db(DB);
+    const user = await db.collection("products").insertOne(req.body);
+    await connection.close();
+    res.json("products inserted");
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "can't connect database" });
+  }
+});
+
+app.get("/getproducts", authendicate, async (req, res) => {
+  try {
+    const connection = await mongoClient.connect(URL);
+    const db = connection.db(DB);
+    const user = await db.collection("products").find().toArray();
+    await connection.close();
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(401).json({ message: "can't connect database" });
   }
 });
 
