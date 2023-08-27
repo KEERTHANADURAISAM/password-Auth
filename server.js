@@ -16,7 +16,7 @@ app.use(
   })
 );
 
-let authendicate = (req, res, next) => {
+let authendicate = (req,res,next) => {
   if (req.headers.authorization) {
     try {
       let decode = jwt.verify(req.headers.authorization, process.env.SECRET);
@@ -76,7 +76,7 @@ app.post("/login", async (req, res) => {
 
       if (compare) {
         let token = jwt.sign({ _id: user._id }, process.env.SECRET, {
-          expiresIn: "2m",
+          expiresIn: "10m",
         });
         res.json(token);
       } else {
