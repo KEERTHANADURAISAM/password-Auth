@@ -76,9 +76,9 @@ app.post("/login", async (req, res) => {
 
       if (compare) {
         let token = jwt.sign({ _id: user._id }, process.env.SECRET, {
-          expiresIn: "10m",
+          expiresIn: "2m",
         });
-        res.json(token);
+        res.json({ token });
       } else {
         res.status(401).json({ message: "email/username not found" });
       }
